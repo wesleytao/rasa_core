@@ -23,6 +23,7 @@ from rasa_core.channels.direct import CollectingOutputChannel
 from rasa_core.tracker_store import TrackerStore
 from rasa_core.trackers import DialogueStateTracker
 from rasa_core.version import __version__
+from rasa_core.channels import UserMessage
 
 if typing.TYPE_CHECKING:
     from rasa_core.interpreter import NaturalLanguageInterpreter as NLI
@@ -58,7 +59,7 @@ def create_argument_parser():
     parser.add_argument(
             '--auth_token',
             type=str,
-            help="Enable token based authentication. Requests need to provide "
+            help="Enable token-based authentication. Requests need to provide "
                  "the token to be accepted.")
     parser.add_argument(
             '-o', '--log_file',
@@ -132,6 +133,7 @@ def requires_auth(token=None):
         return decorated
 
     return decorator
+
 
 
 def _create_agent(
@@ -313,6 +315,23 @@ def create_app(model_directory,  # type: Text
         agent().tracker_store.save(tracker)
         return jsonify(tracker.current_state(should_include_events=True))
 
+    @app.route("/predict", methods=['POST'])
+    @requires_auth(auth_token)
+    @cross_origin(origins=cors_origins)
+    @ensure_loaded_agent(agent)
+    def tracker_predict():
+        """ Given a list of events, predicts the next action"""
+        sender_id = UserMessage.DEFAULT_SENDER_ID
+        request_params = request.get_json(force=True)
+        tracker = DialogueStateTracker.from_dict(sender_id,
+                                                 request_params,
+                                                 agent().domain)
+        policy_ensemble = agent().policy_ensemble
+        probabilities = policy_ensemble.probabilities_using_best_policy(tracker, agent().domain)
+        probability_dict = {agent().domain.action_for_index(idx).name(): probability
+                            for idx, probability in enumerate(probabilities)}
+        return jsonify(probability_dict)
+
     @app.route("/domain",
                methods=['GET'])
     @cross_origin(origins=cors_origins)
@@ -431,6 +450,13 @@ def create_app(model_directory,  # type: Text
                                   action_factory, tracker_store, nlg_endpoint)
         logger.debug("Finished loading new agent.")
         return jsonify({'success': 1})
+
+    @app.route("/model/time-of-last-train", methods=['GET'])
+    @requires_auth(auth_token)
+    @cross_origin(origins=cors_origins)
+    @ensure_loaded_agent(agent)
+    def get_time():
+        return jsonify(agent().time_of_last_train)
 
     return app
 
