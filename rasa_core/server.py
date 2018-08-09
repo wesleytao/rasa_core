@@ -323,6 +323,11 @@ def create_app(model_directory,  # type: Text
         """ Given a list of events, predicts the next action"""
         sender_id = UserMessage.DEFAULT_SENDER_ID
         request_params = request.get_json(force=True)
+        for param in request_params:
+            if param.get('event', None) is None:
+                return Response(
+                       """Invalid list of events provided.""",
+                       status=400)
         tracker = DialogueStateTracker.from_dict(sender_id,
                                                  request_params,
                                                  agent().domain)
