@@ -23,7 +23,6 @@ from rasa_core.policies.memoization import MemoizationPolicy
 from rasa_core.processor import MessageProcessor
 from rasa_core.tracker_store import InMemoryTrackerStore, TrackerStore
 from rasa_core.trackers import DialogueStateTracker
-import time
 from rasa_core.utils import EndpointConfig
 
 logger = logging.getLogger(__name__)
@@ -55,7 +54,6 @@ class Agent(object):
         self.nlg = NaturalLanguageGenerator.create(generator, self.domain)
         self.tracker_store = self.create_tracker_store(
                 tracker_store, self.domain)
-        self.time_of_last_train = None
 
     @classmethod
     def load(cls,
@@ -266,7 +264,6 @@ class Agent(object):
         logger.debug("Agent trainer got kwargs: {}".format(kwargs))
         check_domain_sanity(self.domain)
 
-        self.time_of_last_train = time.time()
         self.policy_ensemble.train(training_trackers, self.domain,
                                    **kwargs)
 
@@ -298,7 +295,6 @@ class Agent(object):
         logger.debug("Agent online trainer got kwargs: {}".format(kwargs))
         check_domain_sanity(self.domain)
 
-        self.time_of_last_train = time.time()
         self.policy_ensemble.train(training_trackers, self.domain, **kwargs)
 
         ensemble = OnlinePolicyEnsemble(self.policy_ensemble,

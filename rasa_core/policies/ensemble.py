@@ -8,6 +8,7 @@ import json
 import logging
 import os
 from collections import defaultdict
+import time
 
 import numpy as np
 import typing
@@ -41,11 +42,11 @@ class UnsupportedDialogueModelError(Exception):
 
 
 class PolicyEnsemble(object):
-    def __init__(self, policies, action_fingerprints=None):
+    def __init__(self, policies, action_fingerprints=None, time_of_last_train=None):
         # type: (List[Policy], Optional[Dict]) -> None
         self.policies = policies
         self.training_trackers = None
-
+        self.time_of_last_train = time_of_last_train
         if action_fingerprints:
             self.action_fingerprints = action_fingerprints
         else:
@@ -68,6 +69,7 @@ class PolicyEnsemble(object):
     def train(self, training_trackers, domain, **kwargs):
         # type: (List[DialogueStateTracker], Domain, **Any) -> None
         if training_trackers:
+            self.time_of_last_train = time.time()
             for policy in self.policies:
                 policy.train(training_trackers, domain, **kwargs)
             self.training_trackers = training_trackers
@@ -141,7 +143,8 @@ class PolicyEnsemble(object):
             "rasa_core": rasa_core.__version__,
             "max_histories": self._max_histories(),
             "ensemble_name": self.__module__ + "." + self.__class__.__name__,
-            "policy_names": policy_names
+            "policy_names": policy_names,
+            "time_of_last_train": self.time_of_last_train
         }
 
         utils.dump_obj_as_json_to_file(domain_spec_path, metadata)
@@ -200,7 +203,8 @@ class PolicyEnsemble(object):
         ensemble_cls = utils.class_from_module_path(
                                 metadata["ensemble_name"])
         fingerprints = metadata.get("action_fingerprints", {})
-        ensemble = ensemble_cls(policies, fingerprints)
+        time_of_last_train = metadata.get("time_of_last_train", None)
+        ensemble = ensemble_cls(policies, fingerprints, time_of_last_train)
         return ensemble
 
 

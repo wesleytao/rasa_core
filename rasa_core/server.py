@@ -456,7 +456,7 @@ def create_app(model_directory,  # type: Text
     @cross_origin(origins=cors_origins)
     @ensure_loaded_agent(agent)
     def get_time():
-        return jsonify(agent().time_of_last_train)
+        return jsonify(agent().policy_ensemble.time_of_last_train)
 
     return app
 
