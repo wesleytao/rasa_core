@@ -122,15 +122,20 @@ class TrackerWithCachedStates(DialogueStateTracker):
         super(TrackerWithCachedStates, self).update(event)
 
         if not skip_states:
+            # these two events force us to throw away the cache
+            if isinstance(event, UserUtteranceReverted):
+                self.clear_states()
+                return
+            elif isinstance(event, Restarted):
+                self.clear_states()
+                return
+
+            # every other action allows us to keep the cache and modify it
             if isinstance(event, ActionExecuted):
                 pass
             elif isinstance(event, ActionReverted):
                 self._states.pop()   # removes the state after the action
                 self._states.pop()   # removes the state used for the action
-            elif isinstance(event, UserUtteranceReverted):
-                self.clear_states()
-            elif isinstance(event, Restarted):
-                self.clear_states()
             else:
                 self._states.pop()
 

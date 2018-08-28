@@ -12,7 +12,7 @@ from collections import Counter
 import numpy as np
 
 from rasa_core import training
-from rasa_core.events import ActionExecuted, UserUttered
+from rasa_core.events import ActionExecuted, UserUttered, UserUtteranceReverted
 from rasa_core.training.structures import Story
 from rasa_core.featurizers import MaxHistoryTrackerFeaturizer, \
     BinarySingleStateFeaturizer
@@ -236,3 +236,16 @@ def test_load_training_data_handles_hidden_files(tmpdir, default_domain):
 
     assert len(data.X) == 0
     assert len(data.y) == 0
+
+
+def test_can_read_test_story_with_restart(default_domain):
+    trackers = training.load_data(
+            "data/test_stories/stories_with_restart_and_rewind.md",
+            default_domain,
+            use_story_concatenation=False,
+            tracker_limit=1000,
+            remove_duplicates=False
+    )
+    assert len(trackers) == 2
+    assert trackers[0].events[3] == UserUtteranceReverted()
+    assert trackers[1].events[3] == UserUtteranceReverted()

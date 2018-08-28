@@ -9,6 +9,8 @@
   - utter_greet             <!-- action of the bot to execute -->
 * mood_unhappy
   - utter_cheer_up
+  - action_restart
+  - restart
   - utter_did_that_help
 * mood_affirm
   - utter_happy
