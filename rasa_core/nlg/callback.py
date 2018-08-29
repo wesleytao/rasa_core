@@ -112,6 +112,8 @@ class CallbackNaturalLanguageGenerator(NaturalLanguageGenerator):
         response.raise_for_status()
 
         content = response.json()
+        logger.debug("NLG returned for {} the message: {}".format(template_name,
+                                                                  content))
         if self.validate_response(content):
             return content
         else:

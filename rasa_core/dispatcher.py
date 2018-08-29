@@ -53,6 +53,8 @@ class Dispatcher(object):
         # type: (Dict[Text, Any]) -> None
         """Send a message to the client."""
 
+        logger.debug("utter response {}".format(message))
+
         bot_message = BotMessage(text=message.get("text"),
                                  data={"elements": message.get("elements"),
                                        "buttons": message.get("buttons"),
