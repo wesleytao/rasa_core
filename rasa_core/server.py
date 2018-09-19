@@ -209,11 +209,13 @@ def create_app(agent,
         if agent.tracker_store:
             conversations = []
             for _id in agent.tracker_store.keys():
-                tracker = agent.tracker_store.retrieve(_id) or {}
-                conversations.append(
-                        {k: tracker.get('k')
-                         for k in {'sender_id', 'latest_event_time'}}
-                )
+                tracker = agent.tracker_store.retrieve(_id)
+                if tracker is not None:
+                    conversation_dict = {
+                        "sender_id": tracker.sender_id,
+                        "timestamp": tracker.events[-1].timestamp
+                    }
+                    conversations.append(conversation_dict)
             return jsonify(conversations)
         else:
             return jsonify([])
