@@ -207,14 +207,14 @@ def create_app(agent,
     @requires_auth(app, auth_token)
     def list_trackers():
         if agent.tracker_store:
-            return jsonify(
-                    [
-                        {
-                            "sender_id": tracker.sender_id,
-                            "latest_event_time": tracker.events[-1].timestamp
-                        } for tracker in agent.tracker_store
-                    ]
-            )
+            conversations = []
+            for _id in agent.tracker_store.keys():
+                tracker = agent.tracker_store.retrieve(_id) or {}
+                conversations.append(
+                        {k: tracker.get('k')
+                         for k in {'sender_id', 'latest_event_time'}}
+                )
+            return jsonify(conversations)
         else:
             return jsonify([])
 
