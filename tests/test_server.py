@@ -147,7 +147,6 @@ def test_list_conversations(app):
     data = json.dumps({"query": "/greet"})
     response = app.post("http://dummy/conversations/myid/respond",
                         data=data, content_type='application/json')
-    content = response.get_json()
     assert response.status_code == 200
 
     response = app.get("http://dummy/conversations")
@@ -155,7 +154,7 @@ def test_list_conversations(app):
     assert response.status_code == 200
 
     assert len(content) > 0
-    assert any(e["sender_id"] == "my_id" for e in content)
+    assert "my_id" in [e["sender_id"] for e in content]
 
 
 def test_remote_status(http_app):
@@ -174,7 +173,7 @@ def test_remote_clients(http_app):
 
     clients = client.clients()
 
-    assert cid in clients
+    assert cid in [client["sender_id"] for client in clients]
 
 
 @pytest.mark.parametrize("event", test_events)
