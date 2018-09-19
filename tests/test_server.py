@@ -147,6 +147,7 @@ def test_list_conversations(app):
     data = json.dumps({"query": "/greet"})
     response = app.post("http://dummy/conversations/myid/respond",
                         data=data, content_type='application/json')
+    content = response.get_json()
     assert response.status_code == 200
 
     response = app.get("http://dummy/conversations")
