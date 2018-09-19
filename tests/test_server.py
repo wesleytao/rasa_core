@@ -155,7 +155,7 @@ def test_list_conversations(app):
     assert response.status_code == 200
 
     assert len(content) > 0
-    assert "my_id" in [e["sender_id"] for e in content]
+    assert "myid" in [e["sender_id"] for e in content]
 
 
 def test_remote_status(http_app):
