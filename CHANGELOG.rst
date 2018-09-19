@@ -30,6 +30,9 @@ Changed
 - improved the online learning experience on the CLI
 - made finetuning during online learning optional (use ``--finetune`` if
   you want to enable it)
+- ``/conversations`` endpoint returns a list of dictionaries containing
+  the trackers' ``sender_id`` and the timestamp of the latest event
+  (``latest_event_time``)
 
 Removed
 -------

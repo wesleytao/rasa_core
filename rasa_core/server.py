@@ -7,13 +7,14 @@ import logging
 import os
 import tempfile
 import zipfile
-from flask import Flask, request, abort, Response, jsonify
-from flask_cors import CORS, cross_origin
-from flask_jwt_simple import JWTManager, view_decorators
 from functools import wraps
 from typing import List
 from typing import Text, Optional
 from typing import Union
+
+from flask import Flask, request, abort, Response, jsonify
+from flask_cors import CORS, cross_origin
+from flask_jwt_simple import JWTManager, view_decorators
 
 from rasa_core import utils, constants
 from rasa_core.channels import (
@@ -87,7 +88,7 @@ def requires_auth(app, token=None):
 def create_app(agent,
                cors_origins=None,  # type: Optional[Union[Text, List[Text]]]
                auth_token=None,  # type: Optional[Text]
-               jwt_secret=None,   # type: Optional[Text]
+               jwt_secret=None,  # type: Optional[Text]
                jwt_method="HS256",  # type: Optional[Text]
                ):
     """Class representing a Rasa Core HTTP server."""
@@ -206,7 +207,14 @@ def create_app(agent,
     @requires_auth(app, auth_token)
     def list_trackers():
         if agent.tracker_store:
-            return jsonify(list(agent.tracker_store.keys()))
+            return jsonify(
+                    [
+                        {
+                            "sender_id": tracker.sender_id,
+                            "latest_event_time": tracker.events[-1].timestamp
+                        } for tracker in agent.tracker_store
+                    ]
+            )
         else:
             return jsonify([])
 
@@ -242,9 +250,9 @@ def create_app(agent,
         except KeyError:
             enum_values = ", ".join([e.name for e in EventVerbosity])
             return Response(
-                "Invalid parameter value for 'events'. Should be "
-                "one of {}".format(enum_values),
-                status=404)
+                    "Invalid parameter value for 'events'. Should be "
+                    "one of {}".format(enum_values),
+                    status=404)
 
         until_time = request.args.get('until', None)
 
@@ -452,15 +460,15 @@ def create_app(agent,
         for param in request_params:
             if param.get('event', None) is None:
                 return Response(
-                    """Invalid list of events provided.""",
-                    status=400)
+                        """Invalid list of events provided.""",
+                        status=400)
         tracker = DialogueStateTracker.from_dict(sender_id,
                                                  request_params,
                                                  agent.domain.slots)
         policy_ensemble = agent.policy_ensemble
         probabilities, _ = policy_ensemble.probabilities_using_best_policy(
-                                                tracker, agent.domain)
-        
+                tracker, agent.domain)
+
         probability_dict = {agent.domain.action_names[idx]: probability
                             for idx, probability in enumerate(probabilities)}
 

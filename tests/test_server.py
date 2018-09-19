@@ -4,11 +4,11 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import json
+import uuid
 from builtins import str
 
-import json
 import pytest
-import uuid
 from freezegun import freeze_time
 
 import rasa_core
@@ -155,7 +155,7 @@ def test_list_conversations(app):
     assert response.status_code == 200
 
     assert len(content) > 0
-    assert "myid" in content
+    assert any(e["sender_id"] == "my_id" for e in content)
 
 
 def test_remote_status(http_app):

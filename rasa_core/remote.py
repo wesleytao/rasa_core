@@ -38,7 +38,7 @@ class RasaCoreClient(object):
         return result.json()
 
     def clients(self):
-        """Get a list of all conversations."""
+        """Get a list of all clients and their latest event timestamp."""
 
         result = self.core_endpoint.request(subpath="/conversations",
                                             method="get")

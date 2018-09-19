@@ -392,7 +392,7 @@ Endpoints
 
 .. http:get:: /conversations
 
-   List the sender ids of all the running conversations.
+   List the sender ids and latest event time of all conversations
 
    **Example request**:
 
@@ -408,7 +408,8 @@ Endpoints
       Vary: Accept
       Content-Type: text/javascript
 
-      ["default"]
+      [{"sender_id": "default", "latest_event_time": 1517821726.200036},
+       {"sender_id": "user_1", "latest_event_time": 1517821721.611933}]
 
    :statuscode 200: no error
 
